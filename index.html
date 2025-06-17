@@ -1,112 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Zohaib Gaming - Latest Asphalt 8 Videos</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      color: #f39c12;
-      margin-bottom: 5px;
-    }
-    #marquee {
-      background: #222;
-      padding: 10px 0;
-      margin-bottom: 20px;
-      font-weight: bold;
-      color: #f1c40f;
-      overflow: hidden;
-      white-space: nowrap;
-      box-sizing: border-box;
-      animation: marquee 15s linear infinite;
-    }
-    @keyframes marquee {
-      0%   { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-    #video-container {
-      max-width: 800px;
-      margin: 0 auto;
-      box-shadow: 0 0 10px #f39c12;
-    }
-    iframe {
-      width: 100%;
-      height: 450px;
-      border: none;
-    }
-    #subscribe {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-    #subscribe a {
-      color: #e74c3c;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zohaib Gaming Login & Suggestions</title>
+<style>
+  body {
+    margin: 0; padding: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://wallpapercave.com/wp/wp2549130.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+  }
+  .container {
+    background: rgba(0,0,0,0.7);
+    max-width: 450px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #comments {
+    margin-top: 20px;
+  }
+  #commentList {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #222;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .comment {
+    padding: 5px;
+    border-bottom: 1px solid #555;
+  }
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 6px;
+    border: none;
+  }
+</style>
 </head>
 <body>
 
-  <h1>Zohaib Gaming</h1>
+<div class="container">
+  <h2>Subscribe Zohaib Gaming</h2>
+  <p><a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank" style="color: #ff4444;">Visit My YouTube Channel</a></p>
+  
+  <button id="googleLogin">Login with Google</button>
+  <button id="facebookLogin">Login with Facebook</button>
 
-  <div id="marquee">
-    Asphalt 8 all latest updates here stay tuned...
+  <div id="userDetails" style="display:none;">
+    <h3>Welcome, <span id="userName"></span></h3>
+    <button id="logout">Logout</button>
   </div>
 
-  <div id="video-container">
-    <!-- Latest video will load here -->
-  </div>
+  <div id="comments">
+    <h3>Leave a suggestion or comment</h3>
+    <textarea id="commentInput" placeholder="Type your message here..."></textarea>
+    <button id="submitComment">Submit</button>
 
-  <div id="subscribe">
-    Subscribe to my channel: 
-    <a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank" rel="noopener noreferrer">
-      Zohaib Gaming
-    </a>
+    <div id="commentList"></div>
   </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
 <script>
-  const apiKey = 'AIzaSyDq7Xb_5d7Q5uhqvO_gBvOD9CzdyjYxmT0';  // My temporary API key
-  const channelId = 'UCxSYK3i7jwUQykbCz951aTQ'; // Your channel ID
+  // Your Firebase config here - replace with your own
+  const firebaseConfig = {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_FIREBASE_PROJECT_ID",
+    storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-  async function loadLatestVideo() {
-    const apiURL = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=1`;
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    try {
-      const response = await fetch(apiURL);
-      const data = await response.json();
-      if (data.items && data.items.length > 0) {
-        const videoId = data.items[0].id.videoId;
-        if (videoId) {
-          const videoHTML = `
-            <iframe 
-              src="https://www.youtube.com/embed/${videoId}" 
-              allowfullscreen 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              title="Latest Zohaib Gaming Asphalt 8 Video"
-            ></iframe>
-          `;
-          document.getElementById('video-container').innerHTML = videoHTML;
-        } else {
-          document.getElementById('video-container').innerHTML = '<p>No videos found.</p>';
-        }
-      } else {
-        document.getElementById('video-container').innerHTML = '<p>Could not fetch videos.</p>';
-      }
-    } catch (error) {
-      console.error('Error fetching YouTube data:', error);
-      document.getElementById('video-container').innerHTML = '<p>Error loading video.</p>';
-    }
+  // Google login
+  document.getElementById('googleLogin').onclick = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(result => {
+      showUserDetails(result.user);
+    }).catch(err => alert(err.message));
+  };
+
+  // Facebook login
+  document.getElementById('facebookLogin').onclick = () => {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    auth.signInWithPopup(provider).then(result => {
+      showUserDetails(result.user);
+    }).catch(err => alert(err.message));
+  };
+
+  // Logout
+  document.getElementById('logout').onclick = () => {
+    auth.signOut().then(() => {
+      document.getElementById('userDetails').style.display = 'none';
+      document.getElementById('googleLogin').style.display = 'block';
+      document.getElementById('facebookLogin').style.display = 'block';
+    });
+  };
+
+  // Show user info
+  function showUserDetails(user) {
+    document.getElementById('userName').textContent = user.displayName;
+    document.getElementById('userDetails').style.display = 'block';
+    document.getElementById('googleLogin').style.display = 'none';
+    document.getElementById('facebookLogin').style.display = 'none';
   }
 
-  loadLatestVideo();
+  // Check if user logged in on page load
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      showUserDetails(user);
+    }
+  });
+
+  // Comments logic
+  const commentList = document.getElementById('commentList');
+  const commentInput = document.getElementById('commentInput');
+  const submitComment = document.getElementById('submitComment');
+
+  let comments = [];
+
+  submitComment.onclick = () => {
+    const text = commentInput.value.trim();
+    if (text.length === 0) {
+      alert('Please write a comment first!');
+      return;
+    }
+    comments.push(text);
+    commentInput.value = '';
+    renderComments();
+  };
+
+  function renderComments() {
+    commentList.innerHTML = '';
+    comments.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'comment';
+      div.textContent = c;
+      commentList.appendChild(div);
+    });
+  }
 </script>
 
 </body>
