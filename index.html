@@ -2,131 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zohaib Gaming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zohaib Gaming - Latest Asphalt 8 Videos</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
       margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background: #e91e63;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-      letter-spacing: 2px;
+    h1 {
+      color: #f39c12;
+      margin-bottom: 5px;
     }
-
-    .marquee {
+    #marquee {
       background: #222;
-      color: #00e676;
-      padding: 10px;
+      padding: 10px 0;
+      margin-bottom: 20px;
       font-weight: bold;
-      white-space: nowrap;
+      color: #f1c40f;
       overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+      animation: marquee 15s linear infinite;
     }
-
-    .marquee span {
-      display: inline-block;
-      padding-left: 100%;
-      animation: marquee 10s linear infinite;
-    }
-
     @keyframes marquee {
-      0%   { transform: translateX(0%); }
+      0%   { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
     }
-
-    .content {
-      padding: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+    #video-container {
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px #f39c12;
     }
-
-    .video, .chat {
-      background: #222;
-      border-radius: 10px;
-      padding: 15px;
-    }
-
     iframe {
       width: 100%;
-      height: 200px;
+      height: 450px;
       border: none;
-      border-radius: 8px;
     }
-
-    .chat textarea {
-      width: 100%;
-      height: 100px;
-      background: #333;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
+    #subscribe {
+      margin-top: 20px;
+      font-size: 18px;
     }
-
-    .subscribe {
-      background: #ff5722;
-      padding: 15px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      border-radius: 0 0 10px 10px;
-    }
-
-    .subscribe a {
-      color: white;
+    #subscribe a {
+      color: #e74c3c;
       text-decoration: none;
-    }
-
-    footer {
-      text-align: center;
-      padding: 15px;
-      background: #000;
-      color: #888;
-      font-size: 0.9rem;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Zohaib Gaming</h1>
-  </header>
+  <h1>Zohaib Gaming</h1>
 
-  <div class="marquee">
-    <span>Asphalt 8 — All Latest Updates Here! Stay Tuned 🎮🔥</span>
+  <div id="marquee">
+    Asphalt 8 all latest updates here stay tuned...
   </div>
 
-  <div class="subscribe">
-    👉 <a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank">Subscribe to Zohaib Gaming on YouTube!</a>
+  <div id="video-container">
+    <!-- Latest video will load here -->
   </div>
 
-  <div class="content">
-    <div class="video">
-      <h2>Latest Video</h2>
-      <iframe src="https://www.youtube.com/embed/NVXgPsK_eTw" allowfullscreen></iframe>
-    </div>
-
-    <div class="chat">
-      <h2>Chat / Comments</h2>
-      <textarea placeholder="Type your message here... (Coming soon)"></textarea>
-    </div>
+  <div id="subscribe">
+    Subscribe to my channel: 
+    <a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank" rel="noopener noreferrer">
+      Zohaib Gaming
+    </a>
   </div>
 
-  <footer>
-    © 2025 Zohaib Gaming. All rights reserved.
-  </footer>
+<script>
+  const apiKey = 'AIzaSyDq7Xb_5d7Q5uhqvO_gBvOD9CzdyjYxmT0';  // My temporary API key
+  const channelId = 'UCxSYK3i7jwUQykbCz951aTQ'; // Your channel ID
+
+  async function loadLatestVideo() {
+    const apiURL = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=1`;
+
+    try {
+      const response = await fetch(apiURL);
+      const data = await response.json();
+      if (data.items && data.items.length > 0) {
+        const videoId = data.items[0].id.videoId;
+        if (videoId) {
+          const videoHTML = `
+            <iframe 
+              src="https://www.youtube.com/embed/${videoId}" 
+              allowfullscreen 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              title="Latest Zohaib Gaming Asphalt 8 Video"
+            ></iframe>
+          `;
+          document.getElementById('video-container').innerHTML = videoHTML;
+        } else {
+          document.getElementById('video-container').innerHTML = '<p>No videos found.</p>';
+        }
+      } else {
+        document.getElementById('video-container').innerHTML = '<p>Could not fetch videos.</p>';
+      }
+    } catch (error) {
+      console.error('Error fetching YouTube data:', error);
+      document.getElementById('video-container').innerHTML = '<p>Error loading video.</p>';
+    }
+  }
+
+  loadLatestVideo();
+</script>
 
 </body>
 </html>
