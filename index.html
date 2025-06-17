@@ -1,198 +1,111 @@
-import React, { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
-
-// --------- Apna Firebase config yahan daal ---------
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
-// -----------------------------------------------------
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export default function ZohaibGaming() {
-  const [user, setUser] = useState(null);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Fetch comments realtime
-  useEffect(() => {
-    const q = query(collection(db, "comments"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const cmnts = [];
-      snapshot.forEach((doc) => {
-        cmnts.push({ id: doc.id, ...doc.data() });
-      });
-      setComments(cmnts);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Login with Google
-  const loginWithGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      alert("Google Login failed: " + err.message);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zohaib Gaming</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
+      margin: 0;
+      padding: 0;
     }
-  };
 
-  // Login with Facebook
-  const loginWithFacebook = async () => {
-    try {
-      const provider = new FacebookAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      alert("Facebook Login failed: " + err.message);
+    header {
+      background: #222;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ffcc00;
     }
-  };
 
-  // Logout user
-  const logout = () => {
-    signOut(auth);
-  };
-
-  // Post new comment
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!comment.trim()) return alert("Comment cannot be empty!");
-    try {
-      await addDoc(collection(db, "comments"), {
-        text: comment,
-        userId: user.uid,
-        userName: user.displayName,
-        createdAt: serverTimestamp(),
-      });
-      setComment("");
-    } catch (err) {
-      alert("Failed to post comment: " + err.message);
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+      color: #ffcc00;
     }
-  };
 
-  return (
-    <div style={{ maxWidth: 600, margin: "auto", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ textAlign: "center" }}>Subscribe Zohaib Gaming</h1>
-      <div style={{ textAlign: "center", marginBottom: 10 }}>
-        <a
-          href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz"
-          target="_blank"
-          rel="noreferrer"
-          style={{ color: "red", textDecoration: "none", fontWeight: "bold" }}
-        >
-          YouTube Channel Link
-        </a>
-      </div>
-      <p
-        style={{
-          fontWeight: "bold",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          boxSizing: "border-box",
-          animation: "marquee 15s linear infinite",
-          border: "1px solid #ccc",
-          padding: "5px",
-          marginBottom: 20,
-        }}
-      >
-        Asphalt 8 all latest updates here, stay tuned!
-      </p>
+    .tagline {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      animation: scroll 10s linear infinite;
+    }
 
-      {!user ? (
-        <div style={{ textAlign: "center" }}>
-          <button onClick={loginWithGoogle} style={{ marginRight: 10, padding: "8px 15px" }}>
-            Login with Google
-          </button>
-          <button onClick={loginWithFacebook} style={{ padding: "8px 15px" }}>
-            Login with Facebook
-          </button>
-        </div>
-      ) : (
-        <div>
-          <p>
-            Welcome, <b>{user.displayName}</b>{" "}
-            <button onClick={logout} style={{ marginLeft: 10, padding: "5px 10px" }}>
-              Logout
-            </button>
-          </p>
+    @keyframes scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
 
-          <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={3}
-              placeholder="Leave your comment here..."
-              style={{ width: "100%", padding: 10, fontSize: 16 }}
-            />
-            <button type="submit" style={{ marginTop: 10, padding: "8px 15px" }}>
-              Post Comment
-            </button>
-          </form>
+    .section {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
 
-          <div style={{ marginTop: 30 }}>
-            <h3>Comments:</h3>
-            {loading ? (
-              <p>Loading comments...</p>
-            ) : comments.length === 0 ? (
-              <p>No comments yet.</p>
-            ) : (
-              comments.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    borderBottom: "1px solid #ddd",
-                    padding: "10px 0",
-                  }}
-                >
-                  <b>{c.userName || "Anonymous"}</b> <br />
-                  <span>{c.text}</span> <br />
-                  <small>{c.createdAt?.seconds ? new Date(c.createdAt.seconds * 1000).toLocaleString() : "Just now"}</small>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+    .subscribe {
+      text-align: center;
+      margin-top: 20px;
+    }
 
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
-      `}</style>
+    .subscribe a {
+      color: #fff;
+      text-decoration: none;
+      background-color: red;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    .upload-box {
+      background: #1c1c1c;
+      padding: 20px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      margin-top: 30px;
+    }
+
+    .upload-box input[type="file"],
+    .upload-box input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    footer {
+      background: #222;
+      text-align: center;
+      padding: 10px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Zohaib Gaming</h1>
+  </header>
+
+  <div class="tagline">Asphalt 8 all latest updates here. Stay tuned.</div>
+
+  <div class="section">
+    <div class="subscribe">
+      <a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank">🎮 Subscribe to Zohaib Gaming</a>
     </div>
-  );
-}
+
+    <div class="upload-box">
+      <h2>Upload your Asphalt 8 Clips</h2>
+      <form>
+        <input type="file" accept="video/*,image/*">
+        <input type="submit" value="Upload (Coming Soon)">
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Zohaib Gaming. All rights reserved.
+  </footer>
+
+</body>
+</html>
