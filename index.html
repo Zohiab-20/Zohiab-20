@@ -3,63 +3,94 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zohaib Gaming</title>
+<title>Zohaib Gaming - Asphalt 8</title>
 <style>
-  body {font-family: Arial, sans-serif; background:#111; color:#eee; margin:0; padding:0;}
-  header {background:#222; padding:1rem; text-align:center;}
-  h1 {margin:0; font-size:2.5rem; color:#f90;}
-  section {padding:1rem; max-width:800px; margin:auto;}
-  input, button {padding:0.5rem; margin:0.5rem 0; width:100%;}
-  video, img {max-width:100%; margin-top:1rem; border-radius:8px;}
-  iframe {width:100%; height:315px; margin-top:1rem; border:none; border-radius:8px;}
+  body {
+    background: #121212;
+    color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #1f1f1f;
+    padding: 20px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    color: #f39c12;
+  }
+  .subscribe {
+    margin-top: 10px;
+  }
+  .subscribe a {
+    background: #e62117;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+  }
+  marquee {
+    background: #333;
+    color: #f39c12;
+    padding: 10px;
+    font-weight: bold;
+  }
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
+  }
+  .gallery img {
+    width: 300px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  .gallery img:hover {
+    transform: scale(1.05);
+  }
+  footer {
+    background: #1f1f1f;
+    text-align: center;
+    padding: 15px;
+    color: #888;
+    font-size: 0.9rem;
+  }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>Zohaib Gaming</h1>
-  <p>Welcome to the official Asphalt 8 content hub</p>
+  <h1>Subscribe Zohaib Gaming</h1>
+  <div class="subscribe">
+    <a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank" rel="noopener noreferrer">Go to YouTube Channel</a>
+  </div>
 </header>
 
-<section>
-  <h2>Embed YouTube Video</h2>
-  <input id="yt-link" type="text" placeholder="Paste YouTube link here" />
-  <button onclick="addVideo()">Add Video</button>
-  <div id="yt-videos"></div>
+<marquee scrollamount="8">Asphalt 8 all latest updates here — stay tuned!</marquee>
+
+<section class="gallery" aria-label="Gallery of Asphalt 8 Cars">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Koenigsegg_Agera_RS_IMG_0277.jpg" alt="Koenigsegg Jesko Absolut" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Bugatti_Veyron_Grand_Sport_Vitesse_IMG_1246.jpg" alt="Bugatti Bolide" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/31/Venom_F5_2019_Monterey_front_2.jpg" alt="Venom F5" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Lamborghini_Sian_FKP_37_IMG_0039.jpg" alt="Lamborghini Sian" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Bentley_Continental_GT_Speed_%28II%29_IMG_3126.jpg" alt="Bentley Continental GT Speed" />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Faraday_FF_91_%2819638228843%29.jpg" alt="Faraday Future FF 91" />
 </section>
 
-<section>
-  <h2>Upload Local Video/Image (Preview only)</h2>
-  <input type="file" accept="video/*,image/*" onchange="previewMedia(event)" />
-  <div id="preview"></div>
-</section>
+<footer>
+  &copy; 2025 Zohaib Gaming. All rights reserved.
+</footer>
 
-<script>
-function addVideo() {
-  const link = document.getElementById('yt-link').value;
-  if (!link) return alert('Please paste a YouTube link!');
-  const videoId = link.split('v=')[1] || link.split('youtu.be/')[1];
-  if (!videoId) return alert('Invalid YouTube link!');
-  const iframe = document.createElement('iframe');
-  iframe.src = 'https://www.youtube.com/embed/' + videoId;
-  document.getElementById('yt-videos').appendChild(iframe);
-  document.getElementById('yt-link').value = '';
-}
-function previewMedia(event) {
-  const file = event.target.files[0];
-  const preview = document.getElementById('preview');
-  preview.innerHTML = '';
-  if (!file) return;
-  if (file.type.startsWith('video')) {
-    const video = document.createElement('video');
-    video.controls = true;
-    video.src = URL.createObjectURL(file);
-    preview.appendChild(video);
-  } else if (file.type.startsWith('image')) {
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(file);
-    preview.appendChild(img);
-  }
-}
-</script>
 </body>
 </html>
