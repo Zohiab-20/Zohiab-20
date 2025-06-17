@@ -1,164 +1,198 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zohaib Gaming Login & Suggestions</title>
-<style>
-  body {
-    margin: 0; padding: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://wallpapercave.com/wp/wp2549130.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: white;
-  }
-  .container {
-    background: rgba(0,0,0,0.7);
-    max-width: 450px;
-    margin: 50px auto;
-    padding: 20px;
-    border-radius: 10px;
-  }
-  button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  #comments {
-    margin-top: 20px;
-  }
-  #commentList {
-    max-height: 200px;
-    overflow-y: auto;
-    background: #222;
-    padding: 10px;
-    border-radius: 8px;
-  }
-  .comment {
-    padding: 5px;
-    border-bottom: 1px solid #555;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 8px;
-    margin: 6px 0;
-    border-radius: 6px;
-    border: none;
-  }
-</style>
-</head>
-<body>
+import React, { useEffect, useState } from "react";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
 
-<div class="container">
-  <h2>Subscribe Zohaib Gaming</h2>
-  <p><a href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz" target="_blank" style="color: #ff4444;">Visit My YouTube Channel</a></p>
-  
-  <button id="googleLogin">Login with Google</button>
-  <button id="facebookLogin">Login with Facebook</button>
+// --------- Apna Firebase config yahan daal ---------
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY_HERE",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+// -----------------------------------------------------
 
-  <div id="userDetails" style="display:none;">
-    <h3>Welcome, <span id="userName"></span></h3>
-    <button id="logout">Logout</button>
-  </div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  <div id="comments">
-    <h3>Leave a suggestion or comment</h3>
-    <textarea id="commentInput" placeholder="Type your message here..."></textarea>
-    <button id="submitComment">Submit</button>
+export default function ZohaibGaming() {
+  const [user, setUser] = useState(null);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    <div id="commentList"></div>
-  </div>
-</div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-
-<script>
-  // Your Firebase config here - replace with your own
-  const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_FIREBASE_PROJECT_ID",
-    storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // Google login
-  document.getElementById('googleLogin').onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then(result => {
-      showUserDetails(result.user);
-    }).catch(err => alert(err.message));
-  };
-
-  // Facebook login
-  document.getElementById('facebookLogin').onclick = () => {
-    const provider = new firebase.auth.FacebookAuthProvider();
-    auth.signInWithPopup(provider).then(result => {
-      showUserDetails(result.user);
-    }).catch(err => alert(err.message));
-  };
-
-  // Logout
-  document.getElementById('logout').onclick = () => {
-    auth.signOut().then(() => {
-      document.getElementById('userDetails').style.display = 'none';
-      document.getElementById('googleLogin').style.display = 'block';
-      document.getElementById('facebookLogin').style.display = 'block';
+  // Auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
     });
-  };
+    return () => unsubscribe();
+  }, []);
 
-  // Show user info
-  function showUserDetails(user) {
-    document.getElementById('userName').textContent = user.displayName;
-    document.getElementById('userDetails').style.display = 'block';
-    document.getElementById('googleLogin').style.display = 'none';
-    document.getElementById('facebookLogin').style.display = 'none';
-  }
-
-  // Check if user logged in on page load
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      showUserDetails(user);
-    }
-  });
-
-  // Comments logic
-  const commentList = document.getElementById('commentList');
-  const commentInput = document.getElementById('commentInput');
-  const submitComment = document.getElementById('submitComment');
-
-  let comments = [];
-
-  submitComment.onclick = () => {
-    const text = commentInput.value.trim();
-    if (text.length === 0) {
-      alert('Please write a comment first!');
-      return;
-    }
-    comments.push(text);
-    commentInput.value = '';
-    renderComments();
-  };
-
-  function renderComments() {
-    commentList.innerHTML = '';
-    comments.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'comment';
-      div.textContent = c;
-      commentList.appendChild(div);
+  // Fetch comments realtime
+  useEffect(() => {
+    const q = query(collection(db, "comments"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const cmnts = [];
+      snapshot.forEach((doc) => {
+        cmnts.push({ id: doc.id, ...doc.data() });
+      });
+      setComments(cmnts);
+      setLoading(false);
     });
-  }
-</script>
+    return () => unsubscribe();
+  }, []);
 
-</body>
-</html>
+  // Login with Google
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      alert("Google Login failed: " + err.message);
+    }
+  };
+
+  // Login with Facebook
+  const loginWithFacebook = async () => {
+    try {
+      const provider = new FacebookAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      alert("Facebook Login failed: " + err.message);
+    }
+  };
+
+  // Logout user
+  const logout = () => {
+    signOut(auth);
+  };
+
+  // Post new comment
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return alert("Comment cannot be empty!");
+    try {
+      await addDoc(collection(db, "comments"), {
+        text: comment,
+        userId: user.uid,
+        userName: user.displayName,
+        createdAt: serverTimestamp(),
+      });
+      setComment("");
+    } catch (err) {
+      alert("Failed to post comment: " + err.message);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 600, margin: "auto", fontFamily: "Arial, sans-serif" }}>
+      <h1 style={{ textAlign: "center" }}>Subscribe Zohaib Gaming</h1>
+      <div style={{ textAlign: "center", marginBottom: 10 }}>
+        <a
+          href="https://youtube.com/@zohaibfarroq-20?si=SkkV6BPNevwDkduz"
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: "red", textDecoration: "none", fontWeight: "bold" }}
+        >
+          YouTube Channel Link
+        </a>
+      </div>
+      <p
+        style={{
+          fontWeight: "bold",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          animation: "marquee 15s linear infinite",
+          border: "1px solid #ccc",
+          padding: "5px",
+          marginBottom: 20,
+        }}
+      >
+        Asphalt 8 all latest updates here, stay tuned!
+      </p>
+
+      {!user ? (
+        <div style={{ textAlign: "center" }}>
+          <button onClick={loginWithGoogle} style={{ marginRight: 10, padding: "8px 15px" }}>
+            Login with Google
+          </button>
+          <button onClick={loginWithFacebook} style={{ padding: "8px 15px" }}>
+            Login with Facebook
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p>
+            Welcome, <b>{user.displayName}</b>{" "}
+            <button onClick={logout} style={{ marginLeft: 10, padding: "5px 10px" }}>
+              Logout
+            </button>
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              placeholder="Leave your comment here..."
+              style={{ width: "100%", padding: 10, fontSize: 16 }}
+            />
+            <button type="submit" style={{ marginTop: 10, padding: "8px 15px" }}>
+              Post Comment
+            </button>
+          </form>
+
+          <div style={{ marginTop: 30 }}>
+            <h3>Comments:</h3>
+            {loading ? (
+              <p>Loading comments...</p>
+            ) : comments.length === 0 ? (
+              <p>No comments yet.</p>
+            ) : (
+              comments.map((c) => (
+                <div
+                  key={c.id}
+                  style={{
+                    borderBottom: "1px solid #ddd",
+                    padding: "10px 0",
+                  }}
+                >
+                  <b>{c.userName || "Anonymous"}</b> <br />
+                  <span>{c.text}</span> <br />
+                  <small>{c.createdAt?.seconds ? new Date(c.createdAt.seconds * 1000).toLocaleString() : "Just now"}</small>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
+    </div>
+  );
+}
