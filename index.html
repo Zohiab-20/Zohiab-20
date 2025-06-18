@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { createRoot } from "react-dom/client";
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "firebase/auth";
 
-// ✅ YOUR FIREBASE CONFIG
+// ✅ Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCtDrv7mDInKKiPmrCzZamH-6MHqYGUFbw",
   authDomain: "zohaib-gaming.firebaseapp.com",
@@ -17,85 +23,156 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-getAnalytics(app);
 
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [mode, setMode] = useState("login");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
+    const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, type) => {
     e.preventDefault();
     setError("");
     try {
-      if (mode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
+      if (type === "login") {
         await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth);
-  };
+  const logout = () => signOut(auth);
+
+  const bgImage =
+    "https://images4.alphacoders.com/596/thumb-1920-596163.jpg"; // Asphalt style background
 
   return (
-    <div style={{ padding: 20, maxWidth: 400, margin: "auto" }}>
+    <div
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        padding: "50px",
+        color: "white",
+        fontFamily: "Segoe UI, sans-serif",
+        textAlign: "center",
+        backdropFilter: "blur(4px)"
+      }}
+    >
+      <h1 style={{ fontSize: "3rem", textShadow: "2px 2px 8px #000" }}>
+        🚗 Asphalt 8 Login Portal 🚗
+      </h1>
+
       {user ? (
-        <>
+        <div
+          style={{
+            background: "rgba(0,0,0,0.6)",
+            margin: "auto",
+            padding: "30px",
+            maxWidth: "400px",
+            borderRadius: "12px"
+          }}
+        >
           <h2>Welcome, {user.email}</h2>
-          <button onClick={handleLogout}>Logout</button>
-        </>
+          <button
+            style={{
+              padding: "12px 30px",
+              background: "#ff5500",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              marginTop: "20px"
+            }}
+            onClick={logout}
+          >
+            Logout
+          </button>
+        </div>
       ) : (
-        <>
-          <h2>{mode === "login" ? "Login" : "Sign Up"}</h2>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ width: "100%", marginBottom: 10, padding: 8 }}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: "100%", marginBottom: 10, padding: 8 }}
-            />
-            <button type="submit" style={{ width: "100%", padding: 10 }}>
-              {mode === "login" ? "Login" : "Sign Up"}
-            </button>
-          </form>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <p style={{ marginTop: 15 }}>
-            {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-            <span
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              style={{ color: "blue", cursor: "pointer" }}
+        <form
+          style={{
+            background: "rgba(0,0,0,0.6)",
+            padding: "30px",
+            maxWidth: "400px",
+            margin: "auto",
+            borderRadius: "12px"
+          }}
+        >
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "12px",
+              marginBottom: "12px",
+              borderRadius: "6px",
+              border: "none"
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "12px",
+              marginBottom: "12px",
+              borderRadius: "6px",
+              border: "none"
+            }}
+          />
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              onClick={(e) => handleSubmit(e, "login")}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: "#ff5500",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer"
+              }}
             >
-              {mode === "login" ? "Sign Up" : "Login"}
-            </span>
-          </p>
-        </>
+              Login
+            </button>
+            <button
+              onClick={(e) => handleSubmit(e, "signup")}
+              style={{
+                flex: 1,
+                padding: "12px",
+                background: "#444",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer"
+              }}
+            >
+              Sign Up
+            </button>
+          </div>
+          {error && (
+            <p style={{ color: "red", marginTop: "12px", fontWeight: "bold" }}>
+              {error}
+            </p>
+          )}
+        </form>
       )}
     </div>
   );
 }
-
-export default App;
