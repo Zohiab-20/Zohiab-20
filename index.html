@@ -1,79 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Zohaib Gaming - Asphalt 8 Videos</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #0ff;
-    }
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .video-card {
-      background-color: #222;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 0 10px #0ff5;
-    }
-    iframe {
-      width: 100%;
-      height: 200px;
-      border-radius: 10px;
-    }
-    .title {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #0f0;
-    }
-  </style>
-</head>
-<body>
+import React, { useState } from "react";
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
-  <h1>Zohaib Gaming 🎮 - Asphalt 8 Videos</h1>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
+};
 
-  <div class="video-grid" id="videoList">
-    <!-- Videos will load here -->
-  </div>
+// Initialize Firebase app & auth
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  <script>
-    const videos = [
-      {
-        title: "Koenigsegg Jesko 🔥 Ultimate Multiplayer Race",
-        url: "https://www.youtube.com/embed/VIDEO_ID1"
-      },
-      {
-        title: "Bugatti La Voiture Noire | Max Speed Test 😍",
-        url: "https://www.youtube.com/embed/VIDEO_ID2"
-      },
-      {
-        title: "Asphalt 8 Update 74 | New Cars & Events 🚗⚡",
-        url: "https://www.youtube.com/embed/VIDEO_ID3"
+export default function Auth() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      if (isLogin) {
+        // Login
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Logged in successfully");
+      } else {
+        // Signup
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Account created successfully");
       }
-    ];
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-    const videoList = document.getElementById("videoList");
-
-    videos.forEach(video => {
-      const card = document.createElement("div");
-      card.className = "video-card";
-      card.innerHTML = `
-        <iframe src="${video.url}" frameborder="0" allowfullscreen></iframe>
-        <div class="title">${video.title}</div>
-      `;
-      videoList.appendChild(card);
-    });
-  </script>
-
-</body>
-</html>
+  return (
+    <div style={{ maxWidth: 400, margin: "auto", padding: 20, border: "1px solid #ccc", borderRadius: 8 }}>
+      <h2>{isLogin ? "Login" : "Sign Up"}</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ width: "100%", padding: 8, marginBottom: 10 }}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ width: "100%", padding: 8, marginBottom: 10 }}
+        />
+        <button type="submit" style={{ width: "100%", padding: 10 }}>
+          {isLogin ? "Login" : "Sign Up"}
+        </button>
+      </form>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <p style={{ marginTop: 15 }}>
+        {isLogin ? "Don't have an account?" : "Already have an account?"}
+        <button onClick={() => setIsLogin(!isLogin)} style={{ marginLeft: 10, cursor: "pointer" }}>
+          {isLogin ? "Sign Up" : "Login"}
+        </button>
+      </p>
+    </div>
+  );
+}
