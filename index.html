@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -9,39 +15,59 @@ const firebaseConfig = {
   storageBucket: "YOUR_STORAGE_BUCKET",
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  measurementId: "YOUR_MEASUREMENT_ID",
 };
 
-// Initialize Firebase app & auth
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-export default function Auth() {
+function App() {
+  const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
       if (isLogin) {
-        // Login
         await signInWithEmailAndPassword(auth, email, password);
-        alert("Logged in successfully");
       } else {
-        // Signup
         await createUserWithEmailAndPassword(auth, email, password);
-        alert("Account created successfully");
       }
+      setEmail("");
+      setPassword("");
     } catch (err) {
       setError(err.message);
     }
   };
 
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  if (user) {
+    return (
+      <div style={{ textAlign: "center", marginTop: 50 }}>
+        <h2>Welcome, {user.email}</h2>
+        <button onClick={handleLogout} style={{ padding: 10, marginTop: 20 }}>
+          Logout
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: 400, margin: "auto", padding: 20, border: "1px solid #ccc", borderRadius: 8 }}>
+    <div style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
       <h2>{isLogin ? "Login" : "Sign Up"}</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -66,11 +92,16 @@ export default function Auth() {
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <p style={{ marginTop: 15 }}>
-        {isLogin ? "Don't have an account?" : "Already have an account?"}
-        <button onClick={() => setIsLogin(!isLogin)} style={{ marginLeft: 10, cursor: "pointer" }}>
+        {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+        <button
+          onClick={() => setIsLogin(!isLogin)}
+          style={{ marginLeft: 10, cursor: "pointer" }}
+        >
           {isLogin ? "Sign Up" : "Login"}
         </button>
       </p>
     </div>
   );
 }
+
+export default App;
