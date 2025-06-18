@@ -1,107 +1,96 @@
-import React, { useState, useEffect } from "react";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut,
-} from "firebase/auth";
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Auth Simple</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
 
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID",
-};
+  <h2>Firebase Login / Signup</h2>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  <div id="user-signed-out">
+    <input type="email" id="email" placeholder="Email" /><br><br>
+    <input type="password" id="password" placeholder="Password" /><br><br>
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign Up</button>
+    <p id="error-msg" style="color:red;"></p>
+  </div>
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
-  const [error, setError] = useState("");
+  <div id="user-signed-in" style="display:none;">
+    <h3>Welcome, <span id="user-email"></span></h3>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  <script>
+    // Your Firebase config here (copy from Firebase console)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
-      setEmail("");
-      setPassword("");
-    } catch (err) {
-      setError(err.message);
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const errorMsg = document.getElementById('error-msg');
+    const signedOutDiv = document.getElementById('user-signed-out');
+    const signedInDiv = document.getElementById('user-signed-in');
+    const userEmailSpan = document.getElementById('user-email');
+
+    function signup() {
+      errorMsg.textContent = "";
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          alert('Account created!');
+        })
+        .catch(error => {
+          errorMsg.textContent = error.message;
+        });
     }
-  };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
+    function login() {
+      errorMsg.textContent = "";
+      const email = emailInput.value;
+      const password = passwordInput.value;
 
-  if (user) {
-    return (
-      <div style={{ textAlign: "center", marginTop: 50 }}>
-        <h2>Welcome, {user.email}</h2>
-        <button onClick={handleLogout} style={{ padding: 10, marginTop: 20 }}>
-          Logout
-        </button>
-      </div>
-    );
-  }
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          // Logged in
+        })
+        .catch(error => {
+          errorMsg.textContent = error.message;
+        });
+    }
 
-  return (
-    <div style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
-      <h2>{isLogin ? "Login" : "Sign Up"}</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
-        />
-        <button type="submit" style={{ width: "100%", padding: 10 }}>
-          {isLogin ? "Login" : "Sign Up"}
-        </button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <p style={{ marginTop: 15 }}>
-        {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-        <button
-          onClick={() => setIsLogin(!isLogin)}
-          style={{ marginLeft: 10, cursor: "pointer" }}
-        >
-          {isLogin ? "Sign Up" : "Login"}
-        </button>
-      </p>
-    </div>
-  );
-}
+    function logout() {
+      auth.signOut();
+    }
 
-export default App;
+    // Listen to auth state change
+    auth.onAuthStateChanged(user => {
+      if(user) {
+        signedOutDiv.style.display = 'none';
+        signedInDiv.style.display = 'block';
+        userEmailSpan.textContent = user.email;
+      } else {
+        signedOutDiv.style.display = 'block';
+        signedInDiv.style.display = 'none';
+        emailInput.value = "";
+        passwordInput.value = "";
+        errorMsg.textContent = "";
+      }
+    });
+  </script>
+
+</body>
+</html>
