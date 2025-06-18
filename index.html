@@ -1,178 +1,78 @@
-import React, { useState, useEffect } from "react";
-import { createRoot } from "react-dom/client";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "firebase/auth";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zohaib Gaming - Asphalt 8 Legend</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🚗 Zohaib Gaming</h1>
+    <p>Asphalt 8 Racer | YouTube Creator | Tips & Tricks</p>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#videos">Videos</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#tips">Racing Tips</a>
+      <a href="#news">News</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
 
-// ✅ Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyCtDrv7mDInKKiPmrCzZamH-6MHqYGUFbw",
-  authDomain: "zohaib-gaming.firebaseapp.com",
-  projectId: "zohaib-gaming",
-  storageBucket: "zohaib-gaming.firebasestorage.app",
-  messagingSenderId: "252242423685",
-  appId: "1:252242423685:web:5717a9ac3e590971535eec",
-  measurementId: "G-HVSR5Y4JGX"
-};
+  <section id="about">
+    <h2>About Me</h2>
+    <p>Hi, I’m Zohaib! I love racing in Asphalt 8 and making cool content for my YouTube fam. Subscribe and join the ride!</p>
+    <a href="https://www.youtube.com/@ZohaibGaming" target="_blank" class="btn">🔔 Subscribe Now</a>
+  </section>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  <section id="videos">
+    <h2>🎥 Latest Video</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/YOUR_VIDEO_ID" frameborder="0" allowfullscreen></iframe>
+  </section>
 
-function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  const handleSubmit = async (e, type) => {
-    e.preventDefault();
-    setError("");
-    try {
-      if (type === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const logout = () => signOut(auth);
-
-  const bgImage =
-    "https://images4.alphacoders.com/596/thumb-1920-596163.jpg"; // Asphalt style background
-
-  return (
-    <div
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        minHeight: "100vh",
-        padding: "50px",
-        color: "white",
-        fontFamily: "Segoe UI, sans-serif",
-        textAlign: "center",
-        backdropFilter: "blur(4px)"
-      }}
-    >
-      <h1 style={{ fontSize: "3rem", textShadow: "2px 2px 8px #000" }}>
-        🚗 Asphalt 8 Login Portal 🚗
-      </h1>
-
-      {user ? (
-        <div
-          style={{
-            background: "rgba(0,0,0,0.6)",
-            margin: "auto",
-            padding: "30px",
-            maxWidth: "400px",
-            borderRadius: "12px"
-          }}
-        >
-          <h2>Welcome, {user.email}</h2>
-          <button
-            style={{
-              padding: "12px 30px",
-              background: "#ff5500",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              marginTop: "20px"
-            }}
-            onClick={logout}
-          >
-            Logout
-          </button>
-        </div>
-      ) : (
-        <form
-          style={{
-            background: "rgba(0,0,0,0.6)",
-            padding: "30px",
-            maxWidth: "400px",
-            margin: "auto",
-            borderRadius: "12px"
-          }}
-        >
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "12px",
-              marginBottom: "12px",
-              borderRadius: "6px",
-              border: "none"
-            }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "12px",
-              marginBottom: "12px",
-              borderRadius: "6px",
-              border: "none"
-            }}
-          />
-          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            <button
-              onClick={(e) => handleSubmit(e, "login")}
-              style={{
-                flex: 1,
-                padding: "12px",
-                background: "#ff5500",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer"
-              }}
-            >
-              Login
-            </button>
-            <button
-              onClick={(e) => handleSubmit(e, "signup")}
-              style={{
-                flex: 1,
-                padding: "12px",
-                background: "#444",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer"
-              }}
-            >
-              Sign Up
-            </button>
-          </div>
-          {error && (
-            <p style={{ color: "red", marginTop: "12px", fontWeight: "bold" }}>
-              {error}
-            </p>
-          )}
-        </form>
-      )}
+  <section id="gallery">
+    <h2>🖼️ Racing Gallery</h2>
+    <div class="gallery">
+      <img src="https://via.placeholder.com/300x200?text=Race+1" alt="Race 1">
+      <img src="https://via.placeholder.com/300x200?text=Race+2" alt="Race 2">
+      <img src="https://via.placeholder.com/300x200?text=Race+3" alt="Race 3">
     </div>
-  );
-}
+  </section>
+
+  <section id="tips">
+    <h2>🔥 Pro Racing Tips</h2>
+    <ul>
+      <li>Use Nitro at ramps for max boost.</li>
+      <li>Drift early on sharp curves.</li>
+      <li>Upgrade Jesko & Centodieci for Multiplayer Domination.</li>
+    </ul>
+  </section>
+
+  <section id="news">
+    <h2>📰 Latest Asphalt 8 News</h2>
+    <article>
+      <h3>Update 74 Released!</h3>
+      <p>New cars added: Bugatti La Voiture Noire & Pagani Huayra Evo! Check them out in the events section.</p>
+    </article>
+    <article>
+      <h3>Multiplayer Cup Live Now</h3>
+      <p>Join the Multiplayer Cup this weekend and earn exclusive rewards!</p>
+    </article>
+  </section>
+
+  <section id="contact">
+    <h2>📬 Contact Me</h2>
+    <form action="https://formspree.io/f/yourFormID" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="email" name="_replyto" placeholder="Your Email" required>
+      <textarea name="message" placeholder="Your Message" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>© 2025 Zohaib Gaming | Built with 💙 for Asphalt 8 fans</p>
+  </footer>
+</body>
+</html>
