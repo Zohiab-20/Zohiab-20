@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tic-Tac-Toe Game</title>
+  <title>Tic-Tac-Toe with AI</title>
   <style>
     body {
-      background: #f0f4f8;
+      background: #1e1e2f;
+      color: white;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       justify-content: center;
@@ -32,18 +33,19 @@
     }
 
     .cell {
-      background-color: #ffffff;
-      border: 2px solid #333;
+      background-color: #292c3e;
+      border: 2px solid #444;
       font-size: 2.5rem;
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
       user-select: none;
+      transition: background 0.2s;
     }
 
     .cell:hover {
-      background-color: #f9f9f9;
+      background-color: #383c51;
     }
 
     #status {
@@ -70,7 +72,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Tic-Tac-Toe Game 🎮</h1>
+    <h1>Tic-Tac-Toe vs Pro AI 🤖</h1>
     <div class="board" id="board">
       <div class="cell" data-index="0"></div>
       <div class="cell" data-index="1"></div>
@@ -82,58 +84,114 @@
       <div class="cell" data-index="7"></div>
       <div class="cell" data-index="8"></div>
     </div>
-    <div id="status">Player X's Turn</div>
+    <div id="status">Your Turn (X)</div>
     <button onclick="resetGame()">Restart Game</button>
   </div>
 
   <script>
     const cells = document.querySelectorAll('.cell');
     const statusText = document.getElementById('status');
-    let currentPlayer = 'X';
     let board = ['', '', '', '', '', '', '', '', ''];
     let isGameOver = false;
 
-    const winningCombos = [
-      [0,1,2], [3,4,5], [6,7,8],
-      [0,3,6], [1,4,7], [2,5,8],
-      [0,4,8], [2,4,6]
-    ];
-
     function handleClick(e) {
       const index = e.target.dataset.index;
-
       if (board[index] !== '' || isGameOver) return;
 
-      board[index] = currentPlayer;
-      e.target.textContent = currentPlayer;
+      board[index] = 'X';
+      e.target.textContent = 'X';
 
-      if (checkWin()) {
-        statusText.textContent = `🎉 Player ${currentPlayer} Wins!`;
+      if (checkGameEnd('X')) return;
+
+      setTimeout(() => {
+        let bestMove = getBestMove();
+        if (bestMove !== -1) {
+          board[bestMove] = 'O';
+          cells[bestMove].textContent = 'O';
+          checkGameEnd('O');
+        }
+      }, 300);
+    }
+
+    function checkGameEnd(player) {
+      if (checkWin(player)) {
+        statusText.textContent = player === 'X' ? '🎉 You Win!' : '💻 AI Wins!';
         isGameOver = true;
-        return;
+        return true;
       }
 
       if (board.every(cell => cell !== '')) {
         statusText.textContent = "It's a Draw!";
         isGameOver = true;
-        return;
+        return true;
       }
 
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      statusText.textContent = `Player ${currentPlayer}'s Turn`;
+      statusText.textContent = player === 'X' ? "AI's Turn (O)" : "Your Turn (X)";
+      return false;
     }
 
-    function checkWin() {
-      return winningCombos.some(combo => {
-        return combo.every(index => board[index] === currentPlayer);
-      });
+    function checkWin(player) {
+      const winPatterns = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return winPatterns.some(pattern =>
+        pattern.every(index => board[index] === player)
+      );
+    }
+
+    function getBestMove() {
+      let bestScore = -Infinity;
+      let move = -1;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === '') {
+          board[i] = 'O';
+          let score = minimax(board, 0, false);
+          board[i] = '';
+          if (score > bestScore) {
+            bestScore = score;
+            move = i;
+          }
+        }
+      }
+      return move;
+    }
+
+    function minimax(newBoard, depth, isMaximizing) {
+      if (checkWin('O')) return 10 - depth;
+      if (checkWin('X')) return depth - 10;
+      if (newBoard.every(cell => cell !== '')) return 0;
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < newBoard.length; i++) {
+          if (newBoard[i] === '') {
+            newBoard[i] = 'O';
+            let score = minimax(newBoard, depth + 1, false);
+            newBoard[i] = '';
+            bestScore = Math.max(score, bestScore);
+          }
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < newBoard.length; i++) {
+          if (newBoard[i] === '') {
+            newBoard[i] = 'X';
+            let score = minimax(newBoard, depth + 1, true);
+            newBoard[i] = '';
+            bestScore = Math.min(score, bestScore);
+          }
+        }
+        return bestScore;
+      }
     }
 
     function resetGame() {
       board = ['', '', '', '', '', '', '', '', ''];
       isGameOver = false;
-      currentPlayer = 'X';
-      statusText.textContent = `Player ${currentPlayer}'s Turn`;
+      statusText.textContent = 'Your Turn (X)';
       cells.forEach(cell => cell.textContent = '');
     }
 
