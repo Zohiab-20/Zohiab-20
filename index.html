@@ -1,92 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subway Surf Mini Game</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subway Surfers Clone</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #222; overflow: hidden; font-family: sans-serif; }
-    #game {
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(to top, #333, #777);
-      position: relative;
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87ceeb;
     }
-    .player {
-      width: 50px;
-      height: 50px;
-      background: yellow;
-      position: absolute;
-      bottom: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 10px;
-    }
-    .train {
-      width: 80px;
-      height: 40px;
-      background: red;
-      position: absolute;
-      top: -40px;
+    canvas {
+      display: block;
+      background: linear-gradient(#87ceeb, #d3d3d3);
     }
   </style>
 </head>
 <body>
-  <div id="game">
-    <div class="player" id="player"></div>
-  </div>
+  <canvas id="game"></canvas>
 
   <script>
-    const game = document.getElementById("game");
-    const player = document.getElementById("player");
-    let lanes = [window.innerWidth / 2 - 100, window.innerWidth / 2, window.innerWidth / 2 + 100];
-    let currentLane = 1;
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-    function movePlayer(dir) {
-      if (dir === 'left' && currentLane > 0) currentLane--;
-      if (dir === 'right' && currentLane < 2) currentLane++;
-      player.style.left = lanes[currentLane] + 'px';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let player = {
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 150,
+      width: 50,
+      height: 50,
+      dy: 0,
+      jumpPower: -15,
+      gravity: 0.8,
+      grounded: false
+    };
+
+    const trains = [];
+    const cop = { x: player.x, y: player.y + 60, width: 50, height: 50 };
+    let keys = {};
+
+    function createTrain() {
+      let lane = Math.floor(Math.random() * 3);
+      let x = canvas.width / 2 - 150 + lane * 100;
+      trains.push({ x: x, y: -100, width: 80, height: 80 });
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') movePlayer('left');
-      if (e.key === 'ArrowRight') movePlayer('right');
+    function drawPlayer() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawCop() {
+      ctx.fillStyle = "blue";
+      ctx.fillRect(cop.x, cop.y, cop.width, cop.height);
+    }
+
+    function drawTrains() {
+      ctx.fillStyle = "gray";
+      for (let train of trains) {
+        ctx.fillRect(train.x, train.y, train.width, train.height);
+      }
+    }
+
+    function updateTrains() {
+      for (let train of trains) {
+        train.y += 6;
+      }
+      if (Math.random() < 0.02) createTrain();
+    }
+
+    function updatePlayer() {
+      player.dy += player.gravity;
+      player.y += player.dy;
+      if (player.y + player.height > canvas.height - 50) {
+        player.y = canvas.height - 50 - player.height;
+        player.dy = 0;
+        player.grounded = true;
+      } else {
+        player.grounded = false;
+      }
+      if (keys["ArrowLeft"]) player.x -= 5;
+      if (keys["ArrowRight"]) player.x += 5;
+      cop.x = player.x;
+      cop.y = player.y + 60;
+    }
+
+    function checkCollision() {
+      for (let train of trains) {
+        if (
+          player.x < train.x + train.width &&
+          player.x + player.width > train.x &&
+          player.y < train.y + train.height &&
+          player.y + player.height > train.y
+        ) {
+          alert("Game Over! Hit by train");
+          document.location.reload();
+        }
+      }
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updateTrains();
+      updatePlayer();
+      checkCollision();
+      drawTrains();
+      drawPlayer();
+      drawCop();
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+      if (e.key === "ArrowUp" && player.grounded) {
+        player.dy = player.jumpPower;
+      }
     });
 
-    function spawnTrain() {
-      const train = document.createElement('div');
-      train.classList.add('train');
-      const lane = Math.floor(Math.random() * 3);
-      train.style.left = lanes[lane] + 'px';
-      game.appendChild(train);
+    window.addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+    });
 
-      let topPos = -40;
-      const interval = setInterval(() => {
-        topPos += 5;
-        train.style.top = topPos + 'px';
-
-        // Collision detection
-        const trainRect = train.getBoundingClientRect();
-        const playerRect = player.getBoundingClientRect();
-
-        if (
-          trainRect.bottom >= playerRect.top &&
-          trainRect.top <= playerRect.bottom &&
-          trainRect.left === playerRect.left
-        ) {
-          alert("Game Over!");
-          window.location.reload();
-        }
-
-        if (topPos > window.innerHeight) {
-          clearInterval(interval);
-          train.remove();
-        }
-      }, 20);
-    }
-
-    setInterval(spawnTrain, 1500);
+    gameLoop();
   </script>
 </body>
 </html>
