@@ -1,70 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subway Game (Basic Working)</title>
+  <title>Subway Runner Mobile + PC</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; background: #333; }
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      background: #87CEEB;
+      display: block;
+      touch-action: none;
+    }
   </style>
 </head>
 <body>
-<canvas id="game"></canvas>
+<canvas id="gameCanvas"></canvas>
+
 <script>
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Player
+const groundLevel = canvas.height - 100;
+let score = 0;
+
 const player = {
   x: canvas.width / 2 - 25,
-  y: canvas.height - 100,
-  w: 50,
-  h: 50,
+  y: groundLevel,
+  width: 50,
+  height: 50,
+  color: "red",
   dy: 0,
-  gravity: 0.8,
-  jump: -15,
-  grounded: false
+  gravity: 1,
+  jumpPower: -20,
+  grounded: true
 };
 
-// Coins
-const coins = [];
-function spawnCoin() {
-  let x = Math.floor(Math.random() * canvas.width);
-  coins.push({ x: x, y: -30, w: 20, h: 20 });
-}
-
-// Trains
 const trains = [];
+const coins = [];
+const keys = {};
+
 function spawnTrain() {
-  let x = Math.floor(Math.random() * (canvas.width - 100));
-  trains.push({ x: x, y: -80, w: 100, h: 60 });
+  const x = Math.random() * (canvas.width - 100);
+  trains.push({ x, y: -80, width: 100, height: 60, color: "gray" });
 }
 
-// Controls
-let keys = {};
-window.addEventListener("keydown", (e) => {
-  keys[e.key] = true;
-  if (e.key === "ArrowUp" && player.grounded) {
-    player.dy = player.jump;
-  }
-});
-window.addEventListener("keyup", (e) => {
-  keys[e.key] = false;
-});
+function spawnCoin() {
+  const x = Math.random() * (canvas.width - 30);
+  coins.push({ x, y: -40, width: 20, height: 20, color: "gold" });
+}
 
-// Game loop
-let score = 0;
 function update() {
   // Gravity
   player.dy += player.gravity;
   player.y += player.dy;
 
-  // Ground
-  if (player.y + player.h > canvas.height - 50) {
-    player.y = canvas.height - 50 - player.h;
+  if (player.y + player.height >= groundLevel) {
+    player.y = groundLevel - player.height;
     player.dy = 0;
     player.grounded = true;
   } else {
@@ -72,40 +67,31 @@ function update() {
   }
 
   // Movement
-  if (keys["ArrowLeft"]) player.x -= 6;
-  if (keys["ArrowRight"]) player.x += 6;
+  if (keys["left"]) player.x -= 5;
+  if (keys["right"]) player.x += 5;
 
-  // Trains movement
-  trains.forEach((t) => (t.y += 5));
+  // Spawn & move
   if (Math.random() < 0.02) spawnTrain();
+  trains.forEach(t => t.y += 5);
 
-  // Coins movement
-  coins.forEach((c) => (c.y += 4));
   if (Math.random() < 0.01) spawnCoin();
+  coins.forEach(c => c.y += 4);
 
-  // Coin Collection
+  // Coin collection
   coins.forEach((c, i) => {
-    if (
-      player.x < c.x + c.w &&
-      player.x + player.w > c.x &&
-      player.y < c.y + c.h &&
-      player.y + player.h > c.y
-    ) {
+    if (player.x < c.x + c.width && player.x + player.width > c.x &&
+        player.y < c.y + c.height && player.y + player.height > c.y) {
       coins.splice(i, 1);
-      score += 1;
+      score++;
     }
   });
 
-  // Train collision
-  trains.forEach((t) => {
-    if (
-      player.x < t.x + t.w &&
-      player.x + player.w > t.x &&
-      player.y < t.y + t.h &&
-      player.y + player.h > t.y
-    ) {
-      alert("Game Over! Score: " + score);
-      document.location.reload();
+  // Collision
+  trains.forEach(t => {
+    if (player.x < t.x + t.width && player.x + player.width > t.x &&
+        player.y < t.y + t.height && player.y + player.height > t.y) {
+      alert("Game Over! Final Score: " + score);
+      location.reload();
     }
   });
 }
@@ -113,17 +99,27 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw Player
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+  // Ground
+  ctx.fillStyle = "#444";
+  ctx.fillRect(0, groundLevel, canvas.width, 100);
 
-  // Draw Coins
-  ctx.fillStyle = "gold";
-  coins.forEach((c) => ctx.fillRect(c.x, c.y, c.w, c.h));
+  // Player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
 
-  // Draw Trains
-  ctx.fillStyle = "gray";
-  trains.forEach((t) => ctx.fillRect(t.x, t.y, t.w, t.h));
+  // Trains
+  trains.forEach(t => {
+    ctx.fillStyle = t.color;
+    ctx.fillRect(t.x, t.y, t.width, t.height);
+  });
+
+  // Coins
+  coins.forEach(c => {
+    ctx.fillStyle = c.color;
+    ctx.beginPath();
+    ctx.arc(c.x + c.width / 2, c.y + c.height / 2, c.width / 2, 0, Math.PI * 2);
+    ctx.fill();
+  });
 
   // Score
   ctx.fillStyle = "white";
@@ -137,6 +133,49 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 gameLoop();
+
+// 🎮 Keyboard Controls (for PC)
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") keys.left = true;
+  if (e.key === "ArrowRight") keys.right = true;
+  if (e.key === "ArrowUp" && player.grounded) player.dy = player.jumpPower;
+});
+
+window.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowLeft") keys.left = false;
+  if (e.key === "ArrowRight") keys.right = false;
+});
+
+// 📱 Swipe Controls (for Mobile)
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener("touchstart", (e) => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}, false);
+
+canvas.addEventListener("touchend", (e) => {
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // Horizontal swipe
+    if (dx > 0) keys.right = true;
+    else keys.left = true;
+    setTimeout(() => {
+      keys.left = false;
+      keys.right = false;
+    }, 150);
+  } else {
+    // Vertical swipe
+    if (dy < 0 && player.grounded) {
+      player.dy = player.jumpPower;
+    }
+  }
+}, false);
 </script>
 </body>
 </html>
