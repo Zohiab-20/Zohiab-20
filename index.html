@@ -3,133 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subway Surfers Clone Enhanced</title>
+  <title>Subway Game (Basic Working)</title>
   <style>
-    body { margin:0; overflow:hidden; background:#000; }
-    canvas { display:block; background: url('subway_bg.png') bottom center / cover no-repeat; }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; background: #333; }
   </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let sprite = new Image();
-sprite.src = 'runner_sprite.png'; // your runner
-
-let trainImg = new Image();
-trainImg.src = 'train.png'; // your train
-
-let coinImg = new Image();
-coinImg.src = 'coin.png'; // your coin
-
-let jumpSound = new Audio('jump.wav');
-let coinSound = new Audio('coin.wav');
-let hitSound = new Audio('hit.wav');
-
+// Player
 const player = {
-  x: canvas.width/2 - 25, y: canvas.height - 150,
-  w:50, h:50, dy:0, jump:-15, gravity:0.8, grounded:false,
-  frame:0, frameDir:1
+  x: canvas.width / 2 - 25,
+  y: canvas.height - 100,
+  w: 50,
+  h: 50,
+  dy: 0,
+  gravity: 0.8,
+  jump: -15,
+  grounded: false
 };
 
-const trains = [];
+// Coins
 const coins = [];
-const cop = { x: player.x, y: player.y + 60, w:50, h:50 };
+function spawnCoin() {
+  let x = Math.floor(Math.random() * canvas.width);
+  coins.push({ x: x, y: -30, w: 20, h: 20 });
+}
 
+// Trains
+const trains = [];
+function spawnTrain() {
+  let x = Math.floor(Math.random() * (canvas.width - 100));
+  trains.push({ x: x, y: -80, w: 100, h: 60 });
+}
+
+// Controls
 let keys = {};
+window.addEventListener("keydown", (e) => {
+  keys[e.key] = true;
+  if (e.key === "ArrowUp" && player.grounded) {
+    player.dy = player.jump;
+  }
+});
+window.addEventListener("keyup", (e) => {
+  keys[e.key] = false;
+});
 
-function createTrain() {
-  let lane = Math.floor(Math.random()*3);
-  let x = canvas.width/2 - 150 + lane*150;
-  trains.push({ x, y: -100, w:120, h:80 });
-}
-
-function createCoin() {
-  let lane = Math.floor(Math.random()*3);
-  let x = canvas.width/2 - 150 + lane*150 + 35;
-  coins.push({ x, y: -80, w:30, h:30 });
-}
-
-function draw() {
-  trains.forEach(t => ctx.drawImage(trainImg, t.x, t.y, t.w, t.h));
-  coins.forEach(c => ctx.drawImage(coinImg, c.x, c.y, c.w, c.h));
-  
-  // Character animation: loop through runner_sprite.png frames
-  let sx = player.frame * 64;
-  ctx.drawImage(sprite, sx, 0, 64, 64, player.x, player.y, player.w, player.h);
-  
-  ctx.fillStyle = 'rgba(0,0,255,0.5)';
-  ctx.fillRect(cop.x, cop.y, cop.w, cop.h);
-}
-
+// Game loop
+let score = 0;
 function update() {
-  // spawn
-  if (Math.random()<0.02) createTrain();
-  if (Math.random()<0.01) createCoin();
-  
-  trains.forEach(t=> t.y += 6);
-  coins.forEach(c=> c.y += 6);
-  
-  coins.forEach((c,i) => {
-    if (player.x < c.x + c.w && player.x + player.w > c.x &&
-        player.y < c.y + c.h && player.y + player.h > c.y) {
-      coins.splice(i,1);
-      coinSound.play();
-      score++;
-    }
-  });
-  
+  // Gravity
   player.dy += player.gravity;
   player.y += player.dy;
+
+  // Ground
   if (player.y + player.h > canvas.height - 50) {
     player.y = canvas.height - 50 - player.h;
     player.dy = 0;
     player.grounded = true;
-  } else player.grounded = false;
+  } else {
+    player.grounded = false;
+  }
 
-  if (keys['ArrowLeft']) player.x -= 6;
-  if (keys['ArrowRight']) player.x += 6;
+  // Movement
+  if (keys["ArrowLeft"]) player.x -= 6;
+  if (keys["ArrowRight"]) player.x += 6;
 
-  cop.x = player.x; cop.y = player.y + 60;
-  
-  player.frame += player.frameDir * 0.25;
-  if (player.frame >= 3 || player.frame <= 0) player.frameDir *= -1;
+  // Trains movement
+  trains.forEach((t) => (t.y += 5));
+  if (Math.random() < 0.02) spawnTrain();
 
-  trains.forEach(t=>{
-    if (player.x < t.x + t.w && player.x + player.w > t.x &&
-        player.y < t.y + t.h && player.y + player.h > t.y) {
-      hitSound.play();
-      alert('Game Over! Score: ' + score);
+  // Coins movement
+  coins.forEach((c) => (c.y += 4));
+  if (Math.random() < 0.01) spawnCoin();
+
+  // Coin Collection
+  coins.forEach((c, i) => {
+    if (
+      player.x < c.x + c.w &&
+      player.x + player.w > c.x &&
+      player.y < c.y + c.h &&
+      player.y + player.h > c.y
+    ) {
+      coins.splice(i, 1);
+      score += 1;
+    }
+  });
+
+  // Train collision
+  trains.forEach((t) => {
+    if (
+      player.x < t.x + t.w &&
+      player.x + player.w > t.x &&
+      player.y < t.y + t.h &&
+      player.y + player.h > t.y
+    ) {
+      alert("Game Over! Score: " + score);
       document.location.reload();
     }
   });
 }
 
-let score = 0;
-function gameLoop() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  update();
-  draw();
-  ctx.fillStyle = 'white';
-  ctx.font = '24px sans-serif';
-  ctx.fillText('Score: ' + score, 20, 40);
-  requestAnimationFrame(gameLoop);
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw Player
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  // Draw Coins
+  ctx.fillStyle = "gold";
+  coins.forEach((c) => ctx.fillRect(c.x, c.y, c.w, c.h));
+
+  // Draw Trains
+  ctx.fillStyle = "gray";
+  trains.forEach((t) => ctx.fillRect(t.x, t.y, t.w, t.h));
+
+  // Score
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, 20, 30);
 }
 
-window.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  if (e.key==='ArrowUp' && player.grounded) {
-    player.dy = player.jump;
-    jumpSound.play();
-  }
-});
-window.addEventListener('keyup', e => keys[e.key] = false);
-
-sprite.onload = () => gameLoop();
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+gameLoop();
 </script>
 </body>
 </html>
